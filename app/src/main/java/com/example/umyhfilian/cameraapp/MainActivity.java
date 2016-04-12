@@ -42,14 +42,14 @@ public class MainActivity extends AppCompatActivity {
         else{
             Log.i(TAG,"Phone doesn't have camera");
         }
-
-
     }
+
     /** Check if this device has a camera */
     private boolean checkCameraHardware(Context context) {
 
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
+
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
         Camera c = null;
@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Initializes needed variables
+     */
     private void initStuff(){
         // Add a listener to the Capture button
         FloatingActionButton captureButton = (FloatingActionButton) findViewById(R.id.MAINACTIVITY_BUTTON_PHOTO);
