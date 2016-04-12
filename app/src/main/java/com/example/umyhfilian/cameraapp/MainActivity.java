@@ -1,18 +1,25 @@
 package com.example.umyhfilian.cameraapp;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -31,20 +38,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initStuff();
-        if(checkCameraHardware(this)){
-            mCamera = getCameraInstance();
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            preview.addView(mPreview);
-        }
-        else{
-            Log.i(TAG,"Phone doesn't have camera");
-        }
 
-
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Toast toast = Toast.makeText(this,
+                        "You need to let this app access your camera and storage for it to function.",
+                        Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.TOP,0,0);
+                toast.show();
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+            } else {
+                initStuff();
+            }
+        } else {
+            initStuff();
+        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                initStuff();
+
+            } else {
+                Toast.makeText(this,
+                        "You need to let this app access your camera and storage for it to function.",
+                        Toast.LENGTH_LONG).show();
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+            }
+        }
+    }
+
     /** Check if this device has a camera */
     private boolean checkCameraHardware(Context context) {
 
@@ -148,6 +180,17 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
             );
+        }
+
+        if(checkCameraHardware(this)){
+            mCamera = getCameraInstance();
+            // Create our Preview view and set it as the content of our activity.
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+        }
+        else{
+            Log.i(TAG, "Phone doesn't have camera");
         }
     }
 
