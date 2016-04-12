@@ -74,6 +74,16 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         1);
             }
+            initStuff();
+            if (checkCameraHardware(this)) {
+                mCamera = getCameraInstance();
+                // Create our Preview view and set it as the content of our activity.
+                mPreview = new CameraPreview(this, mCamera);
+                FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+                preview.addView(mPreview);
+            } else {
+                Log.i(TAG, "Phone doesn't have camera");
+            }
         }
     }
 
@@ -82,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
+
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
         Camera c = null;
@@ -167,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Initializes needed variables
+     */
     private void initStuff(){
         // Add a listener to the Capture button
         FloatingActionButton captureButton = (FloatingActionButton) findViewById(R.id.MAINACTIVITY_BUTTON_PHOTO);
