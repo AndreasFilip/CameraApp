@@ -28,16 +28,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-    CameraPreview mPreview;
-    Camera mCamera;
+    private CameraPreview mPreview;
+    private Camera mCamera;
     private static String TAG = "TAG";
-    public static final int MEDIA_TYPE_IMAGE = 1;
-    public static final int MEDIA_TYPE_VIDEO = 2;
+    private int currentCamera = 0;
+    protected static final int MEDIA_TYPE_IMAGE = 1;
+    protected static final int MEDIA_TYPE_VIDEO = 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FloatingActionButton swapButton =
+                (FloatingActionButton) findViewById(R.id.MAINACTIVITY_BUTTON_SWAP);
 
         if (android.os.Build.VERSION.SDK_INT >= 23) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
@@ -55,6 +59,19 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             initStuff();
+        }
+
+        if (swapButton != null) {
+            swapButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCamera.stopPreview();
+                    releaseCamera();
+                    mCamera = null;
+                    currentCamera++;
+                    initStuff();
+                }
+            });
         }
     }
 
@@ -76,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
             initStuff();
             if (checkCameraHardware(this)) {
-                mCamera = getCameraInstance();
+                mCamera = getCameraInstance(currentCamera);
                 // Create our Preview view and set it as the content of our activity.
                 mPreview = new CameraPreview(this, mCamera);
                 FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
@@ -94,13 +111,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
+    public static Camera getCameraInstance(int nextCamera){
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
+            c = Camera.open(nextCamera); // attempt to get a Camera instance
+        } catch (IndexOutOfBoundsException e) {
+            c = Camera.open(0);
         }
         return c; // returns null if camera is unavailable
     }
@@ -197,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(checkCameraHardware(this)){
-            mCamera = getCameraInstance();
+            mCamera = getCameraInstance(currentCamera);
             // Create our Preview view and set it as the content of our activity.
             mPreview = new CameraPreview(this, mCamera);
             FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
